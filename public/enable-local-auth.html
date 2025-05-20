@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ativar Autenticação Local</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #0F1117;
+      color: white;
+    }
+    .container {
+      background-color: #1F2937;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    h1 {
+      color: #38BDF8;
+    }
+    button {
+      background-color: #38BDF8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0EA5E9;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .enabled {
+      background-color: #10B981;
+    }
+    .disabled {
+      background-color: #EF4444;
+    }
+    .user-box {
+      margin-top: 20px;
+      background-color: #374151;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .user-info {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ativar Autenticação Local</h1>
+    <p>
+      Esta página permite ativar o sistema de autenticação local, que é útil quando não é possível
+      conectar ao Supabase. O sistema local armazena os usuários no navegador e permite login sem
+      conexão com o backend.
+    </p>
+    
+    <div id="status" class="status">
+      Verificando status...
+    </div>
+    
+    <button id="toggleAuth">Alternar Autenticação Local</button>
+    
+    <div class="user-box">
+      <h2>Usuários Disponíveis</h2>
+      <div class="user-info"><strong>Admin:</strong> admin@carbonecompany.com / admin123</div>
+      <div class="user-info"><strong>Gerente:</strong> gerente@carbonecompany.com / gerente123</div>
+      <div class="user-info"><strong>Usuário:</strong> usuario@carbonecompany.com / usuario123</div>
+    </div>
+  </div>
+  
+  <script>
+    // Check the current status
+    function checkStatus() {
+      const useLocalAuth = localStorage.getItem('USE_LOCAL_AUTH') === 'true';
+      const statusDiv = document.getElementById('status');
+      
+      if (useLocalAuth) {
+        statusDiv.textContent = 'Autenticação Local: ATIVADA';
+        statusDiv.className = 'status enabled';
+      } else {
+        statusDiv.textContent = 'Autenticação Local: DESATIVADA';
+        statusDiv.className = 'status disabled';
+      }
+    }
+    
+    // Toggle the local auth setting
+    function toggleLocalAuth() {
+      const currentStatus = localStorage.getItem('USE_LOCAL_AUTH') === 'true';
+      
+      if (currentStatus) {
+        localStorage.removeItem('USE_LOCAL_AUTH');
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('supabase.auth.user');
+        alert('Autenticação local desativada! A página será recarregada.');
+      } else {
+        localStorage.setItem('USE_LOCAL_AUTH', 'true');
+        alert('Autenticação local ativada! A página será recarregada.');
+      }
+      
+      // Reload the page to apply changes
+      window.location.reload();
+    }
+    
+    // Set up event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      checkStatus();
+      
+      document.getElementById('toggleAuth').addEventListener('click', toggleLocalAuth);
+    });
+  </script>
+</body>
+</html> 
