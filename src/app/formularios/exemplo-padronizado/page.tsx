@@ -1,144 +1,192 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import FormLayout from '@/components/FormLayout'
+import { Form } from '@/lib/schemas/form'
+import DynamicForm from '@/components/forms/DynamicForm'
+import { useFormAutoSave } from '@/hooks/useLocalStorage'
 
-// Schema de validação do formulário
-const formSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório'),
-  email: z.string().email('Email inválido'),
-  mensagem: z.string().min(5, 'Mensagem deve ter pelo menos 5 caracteres')
-})
-
-type FormData = z.infer<typeof formSchema>
+// Exemplo de formulário usando o novo padrão
+const exampleForm: Form = {
+  id: 'form-example',
+  title: 'Formulário de Exemplo',
+  description: 'Este é um exemplo de formulário usando o novo padrão de implementação.',
+  isActive: true,
+  isPublic: true,
+  requiresAuth: false,
+  sections: [
+    {
+      id: 'section-1',
+      title: 'Informações Pessoais',
+      description: 'Preencha seus dados pessoais',
+      order: 0,
+      fields: [
+        {
+          id: 'name',
+          type: 'text',
+          label: 'Nome Completo',
+          name: 'name',
+          placeholder: 'Digite seu nome completo',
+          required: true
+        },
+        {
+          id: 'email',
+          type: 'email',
+          label: 'E-mail',
+          name: 'email',
+          placeholder: 'Digite seu e-mail',
+          required: true
+        },
+        {
+          id: 'phone',
+          type: 'tel',
+          label: 'Telefone',
+          name: 'phone',
+          placeholder: '(00) 00000-0000',
+          required: true
+        }
+      ]
+    },
+    {
+      id: 'section-2',
+      title: 'Endereço',
+      description: 'Informe seu endereço completo',
+      order: 1,
+      fields: [
+        {
+          id: 'street',
+          type: 'text',
+          label: 'Rua',
+          name: 'street',
+          placeholder: 'Nome da rua',
+          required: true
+        },
+        {
+          id: 'number',
+          type: 'text',
+          label: 'Número',
+          name: 'number',
+          placeholder: 'Número',
+          required: true
+        },
+        {
+          id: 'complement',
+          type: 'text',
+          label: 'Complemento',
+          name: 'complement',
+          placeholder: 'Apartamento, bloco, etc.',
+          required: false
+        },
+        {
+          id: 'city',
+          type: 'text',
+          label: 'Cidade',
+          name: 'city',
+          placeholder: 'Nome da cidade',
+          required: true
+        },
+        {
+          id: 'state',
+          type: 'select',
+          label: 'Estado',
+          name: 'state',
+          required: true,
+          options: [
+            { label: 'Selecione', value: '' },
+            { label: 'São Paulo', value: 'SP' },
+            { label: 'Rio de Janeiro', value: 'RJ' },
+            { label: 'Minas Gerais', value: 'MG' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'section-3',
+      title: 'Preferências',
+      description: 'Configure suas preferências',
+      order: 2,
+      fields: [
+        {
+          id: 'notifications',
+          type: 'checkbox',
+          label: 'Desejo receber notificações por e-mail',
+          name: 'notifications',
+          required: false
+        },
+        {
+          id: 'interests',
+          type: 'multiselect',
+          label: 'Áreas de Interesse',
+          name: 'interests',
+          required: true,
+          options: [
+            { label: 'Tecnologia', value: 'tech' },
+            { label: 'Saúde', value: 'health' },
+            { label: 'Educação', value: 'education' },
+            { label: 'Finanças', value: 'finance' }
+          ]
+        },
+        {
+          id: 'comments',
+          type: 'textarea',
+          label: 'Comentários Adicionais',
+          name: 'comments',
+          placeholder: 'Digite seus comentários aqui...',
+          required: false
+        }
+      ]
+    }
+  ]
+}
 
 export default function FormularioExemploPadronizado() {
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid }
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    mode: 'onChange'
-  })
-  
-  const onSubmit = async (data: FormData) => {
+  // Usar hook de auto-save
+  const { data, saveData, clearSavedData, lastSaved } = useFormAutoSave(
+    'form-example',
+    {},
+    (data) => {
+      console.log('Dados salvos automaticamente:', data)
+    }
+  )
+
+  const handleSubmit = async (formData: any) => {
     setIsLoading(true)
     setError(null)
     
     try {
-      // Simulação de envio para API
+      // Simular envio para API
       await new Promise(resolve => setTimeout(resolve, 1500))
-      console.log('Dados do formulário:', data)
+      console.log('Dados do formulário:', formData)
       
-      // Simular sucesso
-      setSubmitSuccess(true)
-    } catch (err: any) {
-      console.error('Erro ao enviar formulário:', err)
-      setError(err.message || 'Erro ao processar formulário')
+      // Limpar dados salvos após envio bem-sucedido
+      clearSavedData()
+      
+      // Redirecionar ou mostrar mensagem de sucesso
+      window.location.href = '/formularios/sucesso'
+    } catch (error: any) {
+      console.error('Erro ao enviar formulário:', error)
+      setError(error.message || 'Erro ao processar formulário')
     } finally {
       setIsLoading(false)
     }
   }
-  
-  if (submitSuccess) {
-    return (
-      <div className="max-w-3xl mx-auto my-8">
-        <div className="bg-green-900/20 border border-green-500/20 rounded-xl p-8 text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-green-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <h2 className="text-2xl font-bold text-white mb-2">Formulário Enviado com Sucesso!</h2>
-          <p className="text-gray-300 mb-6">Obrigado por enviar seu formulário. Entraremos em contato em breve.</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-          >
-            Enviar Novo Formulário
-          </button>
-        </div>
-      </div>
-    )
-  }
-  
+
   return (
-    <div className="max-w-3xl mx-auto my-8">
-      <FormLayout
-        title="Formulário de Exemplo Padronizado"
-        subtitle="Este é um exemplo de formulário utilizando o layout padronizado"
-        helpText="Preencha todos os campos abaixo para enviar sua mensagem. Campos com * são obrigatórios."
-        submitLabel="Enviar Formulário"
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      <DynamicForm
+        form={exampleForm}
+        onSubmit={handleSubmit}
         isLoading={isLoading}
         error={error}
-        isValid={isValid}
-        adminInfo={{
-          webhookUrl: "https://webhook.example.com/form-endpoint",
-          description: "Este formulário é apenas um exemplo para demonstrar o layout padronizado."
-        }}
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium text-gray-300 mb-2">
-              Nome Completo*
-            </label>
-            <input
-              id="nome"
-              {...register('nome')}
-              className="block w-full rounded-lg border border-gray-800 bg-gray-900/50 py-3 px-4 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-[#FFC600] focus:border-transparent transition-colors"
-              placeholder="Digite seu nome completo"
-            />
-            {errors.nome && (
-              <p className="text-red-400 text-sm mt-1">{errors.nome.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-              E-mail*
-            </label>
-            <input
-              id="email"
-              type="email"
-              {...register('email')}
-              className="block w-full rounded-lg border border-gray-800 bg-gray-900/50 py-3 px-4 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-[#FFC600] focus:border-transparent transition-colors"
-              placeholder="seu@email.com"
-            />
-            {errors.email && (
-              <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="mensagem" className="block text-sm font-medium text-gray-300 mb-2">
-              Mensagem*
-            </label>
-            <textarea
-              id="mensagem"
-              {...register('mensagem')}
-              rows={5}
-              className="block w-full rounded-lg border border-gray-800 bg-gray-900/50 py-3 px-4 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-[#FFC600] focus:border-transparent transition-colors"
-              placeholder="Digite sua mensagem aqui..."
-            />
-            {errors.mensagem && (
-              <p className="text-red-400 text-sm mt-1">{errors.mensagem.message}</p>
-            )}
-          </div>
-          
-          <div className="bg-blue-900/10 border border-blue-700/20 rounded-lg p-4">
-            <p className="text-sm text-gray-300">
-              Este é apenas um formulário de exemplo para demonstrar o layout padronizado.
-              Nenhum dado enviado será processado.
-            </p>
-          </div>
-        </form>
-      </FormLayout>
+      />
+      
+      {lastSaved && (
+        <p className="text-sm text-gray-400 mt-4">
+          Último salvamento automático: {lastSaved.toLocaleString()}
+        </p>
+      )}
     </div>
   )
 } 

@@ -151,11 +151,11 @@ export default function PromptForm({ formType = 'automoveis', onStepChange }: Pr
   const getSchema = () => {
     switch (formType) {
       case 'energia-solar':
-        return energiaSolarSchema;
+        return energiaSolarSchema as z.ZodType<FormData>;
       case 'outros':
-        return outrosSchema;
+        return outrosSchema as z.ZodType<FormData>;
       default:
-        return automoveisSchema;
+        return automoveisSchema as z.ZodType<FormData>;
     }
   };
 
@@ -165,9 +165,14 @@ export default function PromptForm({ formType = 'automoveis', onStepChange }: Pr
     formState: { errors },
     reset,
     watch,
-  } = useForm({
+  } = useForm<FormData>({
     resolver: zodResolver(getSchema()),
   });
+
+  // Função auxiliar para verificar erros de campo específicos
+  const getFieldError = (field: keyof FormData) => {
+    return errors[field]?.message as string | undefined;
+  };
 
   // Common fields watched across all form types
   const watchNomeEmpresa = watch('nomeEmpresa')
@@ -470,8 +475,8 @@ export default function PromptForm({ formType = 'automoveis', onStepChange }: Pr
                 rows={3}
                 className="block w-full rounded-lg border border-gray-800 bg-gray-900/50 py-3 px-4 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-[#FFC600] focus:border-transparent transition-colors"
               />
-              {errors.tiposSistemas && (
-                <p className="text-red-400 text-sm mt-1">{errors.tiposSistemas.message as string}</p>
+              {getFieldError('tiposSistemas') && (
+                <p className="text-red-400 text-sm mt-1">{getFieldError('tiposSistemas')}</p>
               )}
             </div>
 

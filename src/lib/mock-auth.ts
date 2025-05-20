@@ -156,44 +156,34 @@ export function createMockClient() {
       return {
         select: (columns?: string) => {
           console.log(`Mock DB - SELECT em ${table}${columns ? ` (${columns})` : ''}`);
-          return {
+          const query = {
+            data: [],
+            error: null,
             eq: (column: string, value: any) => {
               console.log(`Mock DB - WHERE ${column} = ${value}`);
               return {
+                ...query,
                 single: () => {
                   console.log(`Mock DB - LIMIT 1`);
                   return Promise.resolve({ data: null, error: null });
                 }
               };
             },
-            // Add direct return for select without conditions
-            then: (callback: Function) => {
-              console.log(`Mock DB - Executing SELECT query`);
-              return Promise.resolve(callback({ data: [], error: null }));
+            single: () => {
+              console.log(`Mock DB - LIMIT 1`);
+              return Promise.resolve({ data: null, error: null });
+            },
+            order: (column: string, options?: { ascending: boolean }) => {
+              console.log(`Mock DB - ORDER BY ${column} ${options?.ascending ? 'ASC' : 'DESC'}`);
+              return Promise.resolve({ data: [], error: null });
             }
           };
+          return query;
         },
         
         insert: (data: any) => {
           console.log(`Mock DB - INSERT em ${table}:`, data);
-          return {
-            select: () => {
-              console.log(`Mock DB - Selecting after INSERT`);
-              return {
-                single: () => {
-                  console.log(`Mock DB - Returning single result after INSERT`);
-                  return Promise.resolve({ data: data, error: null });
-                },
-                then: (callback: Function) => {
-                  console.log(`Mock DB - Executing SELECT after INSERT`);
-                  return Promise.resolve(callback({ data: [data], error: null }));
-                }
-              };
-            },
-            then: (callback: Function) => {
-              return Promise.resolve(callback({ data, error: null }));
-            }
-          };
+          return Promise.resolve({ data, error: null });
         },
         
         update: (data: any) => {
@@ -209,6 +199,11 @@ export function createMockClient() {
               return Promise.resolve({ data: null, error: null });
             }
           };
+        },
+        
+        upsert: (data: any, options?: { onConflict?: string }) => {
+          console.log(`Mock DB - UPSERT em ${table}:`, data, options);
+          return Promise.resolve({ data, error: null });
         }
       };
     }

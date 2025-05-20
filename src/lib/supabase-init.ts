@@ -4,7 +4,55 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { supabaseConfig } from './config'
+
+// Configuração padrão do Supabase
+export const supabaseConfig = {
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+}
+
+// Função para obter credenciais do localStorage
+function getStoredCredentials() {
+  if (typeof window === 'undefined') return null
+  
+  try {
+    const credentials = localStorage.getItem('credentials')
+    if (credentials) {
+      const { supabaseUrl, supabaseKey } = JSON.parse(credentials)
+      return { url: supabaseUrl, key: supabaseKey }
+    }
+  } catch (error) {
+    console.warn('Erro ao ler credenciais do localStorage:', error)
+  }
+  return null
+}
+
+// Cliente Supabase para o frontend
+export function getSupabaseClient() {
+  // Tentar usar credenciais do localStorage primeiro
+  const storedCredentials = getStoredCredentials()
+  
+  if (storedCredentials?.url && storedCredentials?.key) {
+    return createClient(storedCredentials.url, storedCredentials.key)
+  }
+  
+  // Fallback para credenciais do ambiente
+  return createClient(supabaseConfig.url, supabaseConfig.anonKey)
+}
+
+// Cliente Supabase para operações administrativas
+export function getSupabaseAdminClient() {
+  // Tentar usar credenciais do localStorage primeiro
+  const storedCredentials = getStoredCredentials()
+  
+  if (storedCredentials?.url && storedCredentials?.key) {
+    return createClient(storedCredentials.url, storedCredentials.key)
+  }
+  
+  // Fallback para credenciais do ambiente
+  return createClient(supabaseConfig.url, supabaseConfig.serviceKey)
+}
 
 // Script SQL para criar as tabelas necessárias no Supabase
 const CREATE_TABLES_SQL = `
@@ -59,6 +107,63 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Criar função para criar tabela de histórico de prompts se não existir
+CREATE OR REPLACE FUNCTION create_prompt_history_table_if_not_exists()
+RETURNS VOID AS $$
+BEGIN
+  -- Verificar se a tabela prompt_history existe
+  IF NOT EXISTS (
+    SELECT FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name = 'prompt_history'
+  ) THEN
+    -- Criar a tabela prompt_history
+    CREATE TABLE public.prompt_history (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+      prompt TEXT NOT NULL,
+      response TEXT NOT NULL,
+      form_type TEXT NOT NULL,
+      form_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    -- Criar índices
+    CREATE INDEX prompt_history_user_id_idx ON public.prompt_history(user_id);
+    CREATE INDEX prompt_history_created_at_idx ON public.prompt_history(created_at DESC);
+
+    -- Criar trigger para atualizar o timestamp automaticamente
+    CREATE TRIGGER update_prompt_history_updated_at
+    BEFORE UPDATE ON prompt_history
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+    -- Criar política RLS para prompt_history
+    ALTER TABLE public.prompt_history ENABLE ROW LEVEL SECURITY;
+
+    -- Política para leitura: usuários só podem ver seu próprio histórico
+    CREATE POLICY "Users can view own prompt history"
+    ON public.prompt_history FOR SELECT
+    USING (auth.uid() = user_id);
+
+    -- Política para inserção: usuários só podem inserir em seu próprio histórico
+    CREATE POLICY "Users can insert own prompt history"
+    ON public.prompt_history FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+    -- Política para deleção: usuários só podem deletar seu próprio histórico
+    CREATE POLICY "Users can delete own prompt history"
+    ON public.prompt_history FOR DELETE
+    USING (auth.uid() = user_id);
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Executar funções de criação de tabelas
+SELECT create_users_table_if_not_exists();
+SELECT create_prompt_history_table_if_not_exists();
 `;
 
 /**
@@ -70,28 +175,27 @@ export async function testSupabaseConnection(url: string, key: string) {
   try {
     const supabase = createClient(url, key)
     
-    // Tentar fazer uma consulta básica para verificar a conexão
-    const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true })
+    // Tentar fazer uma operação simples
+    const { data, error } = await supabase
+      .from('system_settings')
+      .select('*')
+      .limit(1)
     
     if (error) {
-      console.error('Erro ao testar conexão:', error)
       return {
         success: false,
-        message: `Erro ao conectar: ${error.message}`,
-        details: error
+        message: `Erro ao conectar: ${error.message}`
       }
     }
     
     return {
       success: true,
-      message: 'Conexão com Supabase estabelecida com sucesso!'
+      message: 'Conexão estabelecida com sucesso!'
     }
-  } catch (err: any) {
-    console.error('Erro ao testar conexão:', err)
+  } catch (error: any) {
     return {
       success: false,
-      message: `Erro ao conectar: ${err.message || 'Erro desconhecido'}`,
-      details: err
+      message: `Erro ao conectar: ${error.message}`
     }
   }
 }
@@ -224,5 +328,34 @@ export async function setupDatabaseSchema() {
       message: `Erro: ${err.message || 'Erro desconhecido'}`,
       details: err
     };
+  }
+}
+
+/**
+ * Salva as configurações do Supabase no arquivo de configuração local
+ */
+export async function saveSupabaseConfig(url: string, key: string) {
+  try {
+    // Testar a conexão antes de salvar
+    const testResult = await testSupabaseConnection(url, key)
+    
+    if (!testResult.success) {
+      throw new Error(`Falha ao testar conexão: ${testResult.message}`)
+    }
+    
+    // Salvar no localStorage
+    localStorage.setItem('credentials', JSON.stringify({
+      supabaseUrl: url,
+      supabaseKey: key,
+      isConfigured: true
+    }))
+    
+    return {
+      success: true,
+      message: 'Configurações do Supabase salvas com sucesso!'
+    }
+  } catch (error: any) {
+    console.error('Erro ao salvar configurações:', error)
+    throw error
   }
 } 

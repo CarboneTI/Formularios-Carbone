@@ -25,6 +25,27 @@ export default function ConfiguracoesAvancadas() {
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
+  // Função para carregar as configurações dos formulários
+  const fetchFormSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('form_settings')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao carregar configurações:', error);
+        setErrorMessage('Falha ao carregar configurações dos formulários');
+        return;
+      }
+
+      setFormSettings(data || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar configurações:', error);
+      setErrorMessage(error.message || 'Ocorreu um erro ao carregar as configurações');
+    }
+  };
+
   // Verificar autenticação e carregar configurações
   useEffect(() => {
     const checkAuth = async () => {

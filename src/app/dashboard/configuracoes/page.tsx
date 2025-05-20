@@ -233,27 +233,6 @@ export default function ConfiguracoesPage() {
             </div>
           </div>
           
-          {/* Configurações de aparência */}
-          <div className="bg-gray-900/50 rounded-xl p-6">
-            <h2 className="text-lg font-semibold mb-4">Aparência</h2>
-            
-            <div className="flex items-center">
-              <input
-                id="temaEscuro"
-                type="checkbox"
-                checked={temaEscuro}
-                onChange={(e) => setTemaEscuro(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-700 bg-gray-900 text-[#FFC600] focus:ring-[#FFC600] focus:ring-offset-gray-900"
-              />
-              <label htmlFor="temaEscuro" className="ml-2 block text-sm text-gray-300">
-                Tema escuro
-              </label>
-            </div>
-            <p className="mt-1 text-sm text-gray-400">
-              Atualmente, apenas o tema escuro está disponível. Mais opções em breve.
-            </p>
-          </div>
-          
           {/* Botão de salvar */}
           <div className="flex items-center space-x-4">
             <button
