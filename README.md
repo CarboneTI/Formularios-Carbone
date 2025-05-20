@@ -215,8 +215,7 @@ Para contribuir com o projeto:
 ## 📞 Suporte
 
 ### Contatos
-- Suporte Técnico: suporte@carbonecompany.com
-- Administração: admin@carbonecompany.com
+- Suporte Técnico: ti@carbonecompany.com.br
 
 ## 📄 Licença
-Este projeto é proprietário e confidencial. Todos os direitos reservados à Carbone Company.#
+Este projeto é proprietário e confidencial. Todos os direitos reservados à Carbone Company.
