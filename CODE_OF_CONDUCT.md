@@ -1,5 +1,44 @@
 # Código de Conduta
 
+## 🌟 Valores da Carbone Company
+
+Na Carbone Company, nossos valores são o alicerce de tudo o que fazemos. Eles guiam nossas decisões, ações e interações diárias:
+
+### 1. Respeito Máximo aos Nossos Clientes
+- O cliente é nossa prioridade absoluta
+- Comprometimento com a excelência no atendimento
+- Busca constante pela satisfação do cliente
+
+### 2. O Chefe é o Resultado
+- Foco em resultados mensuráveis
+- Responsabilidade e prestação de contas
+- Decisões baseadas em dados e impacto
+
+### 3. Rápido e Perfeito
+- Agilidade sem comprometer a qualidade
+- Excelência em cada entrega
+- Otimização constante de processos
+
+### 4. Sem Mimimi
+- Foco em soluções, não em problemas
+- Atitude proativa e resolutiva
+- Comunicação direta e eficiente
+
+### 5. Jogar Junto
+- Colaboração e trabalho em equipe
+- Suporte mútuo entre colaboradores
+- Alinhamento com objetivos comuns
+
+### 6. Alto Nível de Exigência
+- Busca pela excelência em tudo que fazemos
+- Padrões elevados de qualidade
+- Compromisso com a melhoria contínua
+
+### 7. 1% Melhor a Cada Dia
+- Aprendizado e crescimento constantes
+- Inovação e adaptabilidade
+- Desenvolvimento pessoal e profissional
+
 ## Nosso Compromisso
 
 No interesse de promover um ambiente aberto e acolhedor, nós, como contribuidores e mantenedores, nos comprometemos a fazer da participação neste projeto uma experiência livre de assédio para todos, independentemente de:
