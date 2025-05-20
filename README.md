@@ -21,16 +21,36 @@ Sistema web interno para gerenciamento e controle de operações da Carbone Comp
 ## 📦 Estrutura do Projeto
 ```
 central-carbone/
-├── src/                    # Código fonte principal
-│   ├── app/               # Rotas e páginas da aplicação
-│   ├── components/        # Componentes React reutilizáveis
-│   └── lib/              # Utilitários e configurações
-├── public/               # Arquivos estáticos
-├── prisma/              # Configurações e modelos do Prisma
-├── nginx/               # Configurações do servidor web
-├── .local-data/         # Dados locais para desenvolvimento
+├── src/                      # Código fonte principal
+│   ├── app/                 # Rotas e páginas da aplicação (Next.js 14 App Router)
+│   ├── components/          # Componentes React reutilizáveis
+│   │   ├── forms/          # Componentes específicos de formulários
+│   │   └── ...            # Outros componentes
+│   ├── hooks/              # Hooks personalizados (usePromptHistory, useLocalStorage, etc)
+│   ├── lib/               # Utilitários e configurações
+│   │   ├── schemas/      # Schemas de validação (Zod)
+│   │   ├── mock-auth/   # Sistema de autenticação local
+│   │   └── ...         # Outras utilidades
+│   ├── config/          # Configurações do sistema
+│   ├── contexts/        # Contextos React
+│   ├── middleware/      # Middlewares da aplicação
+│   ├── scripts/         # Scripts utilitários
+│   └── generated/       # Arquivos gerados automaticamente
+├── public/             # Arquivos estáticos
+├── prisma/            # Configurações e modelos do Prisma
+├── nginx/             # Configurações do servidor web
+├── .local-data/       # Dados locais para desenvolvimento
+├── docker-compose.yml # Configuração do Docker Compose
+├── Dockerfile        # Configuração do container
 └── [arquivos de configuração]
 ```
+
+### Principais Arquivos
+- `supabase-init.sql`: Scripts de inicialização do banco de dados
+- `start-local.js`: Script para execução local
+- `middleware.ts`: Configuração de middlewares globais
+- `next.config.js`: Configuração do Next.js
+- `tailwind.config.js`: Configuração do Tailwind CSS
 
 ## 🔧 Instalação e Execução
 
