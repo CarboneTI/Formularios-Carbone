@@ -16,46 +16,23 @@ export interface WebhookConfig {
 // Type for all supported form types
 export type FormType = 'automoveis' | 'energia-solar' | 'outros' | 'formulario-de-criacao-de-prompt';
 
+// URL do webhook de criação de prompt
+const PROMPT_WEBHOOK_URL = 'https://autogrowth.cabonesolucoes.com.br/webhook/2e418174-0f99-403f-9539-2d1dacbceaa2-formulario-de-criacao-de-prompt-automatizado';
+
+// Configuração padrão do webhook de prompt
+const promptWebhookConfig: WebhookConfig = {
+  url: PROMPT_WEBHOOK_URL,
+  headers: {},
+  enabled: true,
+  description: 'Webhook for prompt creation - processes form data with n8n workflow'
+};
+
 // Mapping of form types to their webhook configurations
 export const webhooks: Record<FormType, WebhookConfig[]> = {
-  'automoveis': [
-    {
-      url: 'https://example.com/webhook/automoveis',
-      headers: {
-        'Authorization': 'Bearer YOUR_API_KEY'
-      },
-      enabled: false, // Disabled by default
-      description: 'Webhook for automobile forms - sends data to CRM system'
-    }
-  ],
-  'energia-solar': [
-    {
-      url: 'https://example.com/webhook/energia-solar',
-      headers: {
-        'Authorization': 'Bearer YOUR_API_KEY'
-      },
-      enabled: false, // Disabled by default
-      description: 'Webhook for solar energy forms - sends data to lead management system'
-    }
-  ],
-  'outros': [
-    {
-      url: 'https://example.com/webhook/outros',
-      headers: {
-        'Authorization': 'Bearer YOUR_API_KEY'
-      },
-      enabled: false, // Disabled by default
-      description: 'Webhook for other service forms - sends data to general CRM'
-    }
-  ],
-  'formulario-de-criacao-de-prompt': [
-    {
-      url: 'https://autogrowth.cabonesolucoes.com.br/webhook/2e418174-0f99-403f-9539-2d1dacbceaa2-formulario-de-criacao-de-prompt-automatizado',
-      headers: {},
-      enabled: true, // Enabled by default 
-      description: 'Webhook for prompt creation form - processes form data with n8n workflow'
-    }
-  ]
+  'automoveis': [promptWebhookConfig],
+  'energia-solar': [promptWebhookConfig],
+  'outros': [promptWebhookConfig],
+  'formulario-de-criacao-de-prompt': [promptWebhookConfig]
 };
 
 /**

@@ -8,16 +8,10 @@ export async function POST(req: NextRequest) {
     
     console.log('API generate-prompt recebeu dados:', data);
     
-    // Force formType for prompt creation form
-    if (!data.formType) {
-      data.formType = 'formulario-de-criacao-de-prompt';
-    }
-    
-    // Verificar os campos obrigatórios comuns apenas se não for o formulário de prompt
-    if (data.formType !== 'formulario-de-criacao-de-prompt' && 
-        (!data.nomeEmpresa || !data.tempoMercado || !data.localizacao || 
+    // Verificar os campos obrigatórios comuns
+    if (!data.nomeEmpresa || !data.tempoMercado || !data.localizacao || 
         !data.nomeAssistente || !data.generoBot || 
-        !data.regrasCriticas || !data.proibicoesAbsolutas || !data.exemplosConversas)) {
+        !data.regrasCriticas || !data.proibicoesAbsolutas || !data.exemplosConversas) {
       return NextResponse.json(
         { error: 'Campos básicos obrigatórios não preenchidos' }, 
         { status: 400 }
@@ -44,36 +38,34 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // Verificar campos específicos por tipo de formulário apenas se não for o formulário de prompt
+    // Verificar campos específicos por tipo de formulário
     let camposValidos = true;
     let mensagemErro = '';
     
-    if (data.formType !== 'formulario-de-criacao-de-prompt') {
-      switch (data.formType) {
-        case 'automoveis':
-          if (!data.tiposVeiculos || !data.marcasTrabalhadas || !data.formasPagamento ||
-              !data.diferenciais || !data.taxasAdicionais) {
-            camposValidos = false;
-            mensagemErro = 'Campos específicos para automóveis são obrigatórios';
-          }
-          break;
-          
-        case 'energia-solar':
-          if (!data.tiposSistemas || !data.marcasEquipamentos || !data.formasPagamento ||
-              !data.diferenciais || !data.beneficiosEconomicos) {
-            camposValidos = false;
-            mensagemErro = 'Campos específicos para energia solar são obrigatórios';
-          }
-          break;
-          
-        case 'outros':
-          if (!data.tipoServico || !data.publico || !data.formasPagamento ||
-              !data.diferenciais || !data.precosServicos || !data.politicasCancelamento) {
-            camposValidos = false;
-            mensagemErro = 'Campos específicos para outros serviços são obrigatórios';
-          }
-          break;
-      }
+    switch (data.formType) {
+      case 'automoveis':
+        if (!data.tiposVeiculos || !data.marcasTrabalhadas || !data.formasPagamento ||
+            !data.diferenciais || !data.taxasAdicionais) {
+          camposValidos = false;
+          mensagemErro = 'Campos específicos para automóveis são obrigatórios';
+        }
+        break;
+        
+      case 'energia-solar':
+        if (!data.tiposSistemas || !data.marcasEquipamentos || !data.formasPagamento ||
+            !data.diferenciais || !data.beneficiosEconomicos) {
+          camposValidos = false;
+          mensagemErro = 'Campos específicos para energia solar são obrigatórios';
+        }
+        break;
+        
+      case 'outros':
+        if (!data.tipoServico || !data.publico || !data.formasPagamento ||
+            !data.diferenciais || !data.precosServicos || !data.politicasCancelamento) {
+          camposValidos = false;
+          mensagemErro = 'Campos específicos para outros serviços são obrigatórios';
+        }
+        break;
     }
     
     if (!camposValidos) {
@@ -82,23 +74,13 @@ export async function POST(req: NextRequest) {
     
     // Gerar o prompt baseado nos dados recebidos
     console.log('Gerando prompt para formType:', data.formType);
-    let prompt = '';
+    const prompt = generatePromptTemplate(data);
     
-    if (data.formType === 'formulario-de-criacao-de-prompt') {
-      // Para o formulário de criação de prompt, podemos usar um template mais simples
-      // ou simplesmente passar os dados brutos para o webhook
-      prompt = "Prompt para processamento pelo sistema n8n";
-    } else {
-      prompt = generatePromptTemplate(data);
-    }
-    
-    // Determine the form type for webhook
-    const webhookFormType: FormType = 'formulario-de-criacao-de-prompt';
-    
-    console.log('Enviando dados para webhook:', webhookFormType);
+    // Enviar para o webhook
+    console.log('Enviando dados para webhook:', data.formType);
     
     // Trigger webhooks asynchronously (don't wait for them to complete)
-    triggerWebhooks(webhookFormType, {
+    triggerWebhooks(data.formType, {
       formData: data,
       prompt: prompt,
       timestamp: new Date().toISOString(),
