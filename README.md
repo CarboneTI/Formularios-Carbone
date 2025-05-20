@@ -109,28 +109,39 @@ central-carbone/
 
 ## 🚢 Deploy
 
+### Infraestrutura
+- **VPS**: DigitalOcean Droplet
+- **Gerenciamento**: Coolify
+- **Proxy Reverso**: Nginx
+
 ### Requisitos do Sistema
 - CPU: 2 cores ou mais
 - RAM: 4GB ou mais
 - Disco: 20GB SSD
 - Sistema: Ubuntu 20.04 LTS ou superior
+- Droplet Basic da DigitalOcean (ou superior)
 
 ### Preparação do Ambiente
-1. Instalação do Docker e Docker Compose
-2. Configuração do domínio e SSL
-3. Configuração das variáveis de ambiente
-4. Configuração do Nginx
+1. Criar Droplet na DigitalOcean:
+   - Escolher Ubuntu 20.04 LTS
+   - Selecionar plano Basic com recursos adequados
+   - Configurar acesso SSH
+2. Instalar e configurar Coolify no Droplet
+3. Configurar domínio e SSL
+4. Configurar variáveis de ambiente
+5. Configurar Nginx como proxy reverso
 
 ### Processo de Deploy
 1. Conecte o repositório ao Coolify
 2. Configure o pipeline de CI/CD
-3. O sistema será construído e implantado automaticamente
+3. O sistema será construído e implantado automaticamente no Droplet
 
 ### Manutenção
-- Atualizações regulares
-- Backups automáticos
-- Renovação de certificados SSL
-- Monitoramento de logs
+- Atualizações regulares do sistema
+- Backups automáticos via DigitalOcean
+- Renovação automática de certificados SSL
+- Monitoramento de recursos via Coolify
+- Logs centralizados
 
 ## 🔒 Segurança
 
