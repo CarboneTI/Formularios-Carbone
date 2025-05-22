@@ -254,3 +254,79 @@ Para contribuir com o projeto:
 
 ## 📄 Licença
 Este projeto é proprietário e confidencial. Todos os direitos reservados à Carbone Company.
+
+## Design System
+
+### Cores
+```css
+/* Cores Principais */
+--color-primary: #FFC600;      /* Amarelo principal */
+--color-primary-hover: #FFD700; /* Amarelo hover */
+--color-background: #0F1117;    /* Fundo escuro */
+--color-surface: rgba(17, 17, 17, 0.7); /* Superfícies/Cards */
+--color-border: rgba(255, 255, 255, 0.05); /* Bordas */
+
+/* Texto */
+--color-text: #FFFFFF;          /* Texto principal */
+--color-text-secondary: rgba(255, 255, 255, 0.7); /* Texto secundário */
+--color-text-tertiary: rgba(255, 255, 255, 0.5);  /* Texto terciário */
+```
+
+### Tipografia
+- **Font Family**: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+- **Tamanhos**:
+  - Títulos grandes: 24px (1.5rem)
+  - Títulos médios: 20px (1.25rem)
+  - Texto padrão: 16px (1rem)
+  - Texto pequeno: 14px (0.875rem)
+
+### Sombras
+```css
+--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+```
+
+### Componentes
+
+#### Botões
+- **Primário**: Fundo amarelo (#FFC600) com texto preto
+- **Secundário**: Fundo cinza escuro com texto branco
+- **Hover**: Transição suave de cores
+- **Desabilitado**: Opacidade reduzida (50%)
+
+#### Formulários
+- **Inputs**: Fundo escuro semi-transparente com borda
+- **Focus**: Anel de foco amarelo
+- **Hover**: Borda amarela
+- **Labels**: Texto amarelo, fonte média
+
+#### Cards
+- Fundo semi-transparente (rgba(17, 17, 17, 0.7))
+- Borda sutil (rgba(255, 255, 255, 0.05))
+- Backdrop blur para efeito de vidro
+- Cantos arredondados (border-radius: 8px)
+
+#### Dropdowns
+- Menu com fundo escuro semi-transparente
+- Efeito de blur no background
+- Itens com hover suave
+- Indicador amarelo para item selecionado
+
+### Transições e Animações
+```css
+--transition-base: all 0.2s ease;
+```
+- Transições suaves em interações
+- Feedback visual em hover/focus
+- Animações sutis para loading e estados
+
+### Acessibilidade
+- Alto contraste entre texto e fundo
+- Focus visível em todos elementos interativos
+- Tamanhos mínimos para áreas clicáveis
+- Feedback visual claro para estados
+
+## Instalação e Uso
+[Instruções de instalação e uso aqui...]
