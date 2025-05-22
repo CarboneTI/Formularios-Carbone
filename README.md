@@ -510,3 +510,326 @@ export default function NomeFormulario() {
 - [ ] Responsividade implementada
 - [ ] Acessibilidade verificada
 - [ ] Testes de validação realizados
+
+### Padrões de Formulários
+
+#### 1. Tipos de Formulários
+
+1. **Formulário Dinâmico**
+   - Usado para formulários baseados em configuração (JSON)
+   - Ideal para formulários que mudam frequentemente
+   - Exemplo: `FormularioExemploPadronizado`
+
+2. **Formulário Específico**
+   - Para formulários com lógica de negócio complexa
+   - Quando há integrações específicas
+   - Exemplo: `ReschedulingForm`, `SACForm`
+
+#### 2. Estrutura de Diretórios
+
+```
+src/
+├── components/
+│   └── forms/
+│       ├── [nome-formulario]/             # Pasta para cada formulário
+│       │   ├── index.tsx                  # Componente principal
+│       │   ├── schema.ts                  # Validação Zod
+│       │   ├── types.ts                   # Types e interfaces
+│       │   └── components/                # Componentes específicos
+│       │       ├── FormFields.tsx         # Campos do formulário
+│       │       ├── FormActions.tsx        # Botões e ações
+│       │       └── [ComponenteEspecifico].tsx
+│       └── shared/                        # Componentes compartilhados
+│           ├── FormContainer.tsx
+│           ├── FormField.tsx
+│           ├── FormSection.tsx
+│           └── FormHeader.tsx
+```
+
+#### 3. Estrutura do Componente Principal
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FormSchema } from './schema'
+import { FormContainer, FormHeader } from '../shared'
+import { FormFields, FormActions } from './components'
+import { useFormAutoSave } from '@/hooks/useLocalStorage'
+
+export default function NomeFormulario() {
+  // 1. Estados
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  // 2. Form Hook
+  const form = useForm({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      // valores iniciais
+    }
+  })
+
+  // 3. Auto-save (opcional)
+  const { data, saveData, clearSavedData } = useFormAutoSave(
+    'form-id',
+    form.getValues(),
+    (data) => console.log('Auto-save:', data)
+  )
+
+  // 4. Submit Handler
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      // Lógica de submit
+      
+      setSuccess(true)
+      clearSavedData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <FormContainer>
+      <FormHeader 
+        title="Título do Formulário"
+        description="Descrição do formulário"
+      />
+
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormFields form={form} />
+        
+        {error && (
+          <div className="alert alert-error" role="alert">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="alert alert-success" role="alert">
+            Formulário enviado com sucesso!
+          </div>
+        )}
+
+        <FormActions
+          isLoading={isLoading}
+          onCancel={() => {/* lógica */}}
+        />
+      </form>
+    </FormContainer>
+  )
+}
+```
+
+#### 4. Validação com Zod
+
+```typescript
+// schema.ts
+import { z } from 'zod'
+
+export const FormSchema = z.object({
+  // Campos obrigatórios
+  campo: z.string().min(1, 'Campo obrigatório'),
+  email: z.string().email('Email inválido'),
+  telefone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Telefone inválido'),
+  
+  // Campos condicionais
+  outrosCampos: z.string().optional(),
+  
+  // Arrays
+  items: z.array(z.string()).min(1, 'Selecione pelo menos um item'),
+  
+  // Objetos aninhados
+  endereco: z.object({
+    rua: z.string(),
+    numero: z.string(),
+    complemento: z.string().optional()
+  })
+})
+
+export type FormData = z.infer<typeof FormSchema>
+```
+
+#### 5. Componentes Base
+
+1. **FormContainer**
+```tsx
+export function FormContainer({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full max-w-4xl mx-auto p-6 space-y-8 bg-gray-900/50 border border-gray-800 rounded-lg">
+      {children}
+    </div>
+  )
+}
+```
+
+2. **FormField**
+```tsx
+export function FormField({
+  label,
+  error,
+  required,
+  children
+}: FormFieldProps) {
+  return (
+    <div className="form-field">
+      <label className="form-label">
+        {label}
+        {required && <span className="text-[#FFC600]">*</span>}
+      </label>
+      
+      {children}
+      
+      {error && (
+        <span className="form-error">{error}</span>
+      )}
+    </div>
+  )
+}
+```
+
+3. **FormActions**
+```tsx
+export function FormActions({
+  isLoading,
+  onCancel
+}: FormActionsProps) {
+  return (
+    <div className="form-actions">
+      <button
+        type="button"
+        onClick={onCancel}
+        className="btn btn-secondary"
+      >
+        Cancelar
+      </button>
+      
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="btn btn-primary"
+      >
+        {isLoading ? (
+          <>
+            <span className="animate-spin">...</span>
+            Enviando...
+          </>
+        ) : (
+          'Enviar'
+        )}
+      </button>
+    </div>
+  )
+}
+```
+
+#### 6. Estados e Feedback
+
+1. **Loading**
+   - Indicador visual no botão de submit
+   - Desabilitar campos durante submissão
+   - Spinner ou skeleton para carregamento inicial
+
+2. **Erros**
+   - Mensagens de erro por campo
+   - Mensagem de erro global
+   - Feedback visual nos campos inválidos
+
+3. **Sucesso**
+   - Mensagem de sucesso
+   - Redirecionamento após sucesso
+   - Limpeza do formulário
+
+#### 7. Estilos Padrão
+
+```css
+.form-container {
+  @apply w-full max-w-4xl mx-auto p-6 space-y-8
+         bg-gray-900/50 border border-gray-800 rounded-lg;
+}
+
+.form-field {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-[#FFC600];
+}
+
+.form-input {
+  @apply w-full p-3 rounded-lg 
+         bg-gray-900/50 border border-gray-800 
+         text-white
+         focus:ring-2 focus:ring-[#FFC600] focus:border-transparent;
+}
+
+.form-error {
+  @apply text-sm text-red-500;
+}
+
+.form-actions {
+  @apply flex flex-col sm:flex-row justify-end gap-4 mt-8;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium
+         transition-colors duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply bg-[#FFC600] text-black
+         hover:bg-[#FFD700];
+}
+
+.btn-secondary {
+  @apply bg-gray-800 text-white
+         hover:bg-gray-700;
+}
+```
+
+#### 8. Checklist de Implementação
+
+- [ ] Estrutura de arquivos correta
+- [ ] Schema de validação com Zod
+- [ ] React Hook Form configurado
+- [ ] Componentes base utilizados
+- [ ] Estados de loading/erro/sucesso
+- [ ] Feedback visual implementado
+- [ ] Estilos conforme design system
+- [ ] Auto-save configurado (se necessário)
+- [ ] Testes implementados
+- [ ] Documentação atualizada
+
+#### 9. Boas Práticas
+
+1. **Performance**
+   - Usar `React.memo()` para componentes puros
+   - Implementar debounce em inputs de busca
+   - Lazy loading para componentes pesados
+
+2. **Acessibilidade**
+   - Labels descritivos
+   - Atributos ARIA
+   - Mensagens de erro claras
+   - Ordem de tabulação lógica
+
+3. **UX**
+   - Feedback imediato
+   - Validação em tempo real
+   - Persistência de dados
+   - Prevenção de envios duplicados
+
+4. **Segurança**
+   - Validação no cliente e servidor
+   - Sanitização de inputs
+   - CSRF tokens
+   - Rate limiting
