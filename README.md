@@ -330,3 +330,307 @@ Este projeto é proprietário e confidencial. Todos os direitos reservados à Ca
 
 ## Instalação e Uso
 [Instruções de instalação e uso aqui...]
+
+## Padrões de Desenvolvimento
+
+### Formulários
+
+#### Estrutura Base
+```tsx
+'use client'
+
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FormSchema } from '@/lib/schemas/form-schema'
+
+export default function FormularioExemplo() {
+  const form = useForm({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      // valores iniciais aqui
+    }
+  })
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-6">
+      <header>
+        {/* Cabeçalho padrão */}
+      </header>
+      
+      <main className="form-container">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Campos do formulário */}
+        </form>
+      </main>
+    </div>
+  )
+}
+```
+
+#### Componentes Padrão
+
+1. **FormField** - Campo base para inputs
+```tsx
+<FormField
+  name="campo"
+  label="Label do Campo"
+  error={form.formState.errors.campo}
+  required
+>
+  <input
+    type="text"
+    className="form-input"
+    {...form.register('campo')}
+  />
+</FormField>
+```
+
+2. **DateTimePicker** - Seletor de data e hora
+```tsx
+<DateTimePicker
+  label="Data e Hora"
+  value={data}
+  onChange={setData}
+  required
+/>
+```
+
+3. **Dropdown** - Menu suspenso personalizado
+```tsx
+<Dropdown
+  label="Selecione uma opção"
+  options={opcoes}
+  value={selecionado}
+  onChange={setSelecionado}
+  required
+/>
+```
+
+4. **FileUpload** - Upload de arquivos
+```tsx
+<FileUpload
+  label="Anexar arquivo"
+  accept=".pdf,.doc,.docx"
+  maxSize={5} // MB
+  onUpload={handleUpload}
+/>
+```
+
+#### Validação
+
+1. **Schema Zod**
+```tsx
+import { z } from 'zod'
+
+export const FormSchema = z.object({
+  nome: z.string().min(3, 'Nome muito curto'),
+  email: z.string().email('Email inválido'),
+  telefone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Telefone inválido'),
+  data: z.string().min(1, 'Data obrigatória'),
+})
+```
+
+2. **Mensagens de Erro**
+```tsx
+{form.formState.errors.campo && (
+  <span className="text-sm text-red-500">
+    {form.formState.errors.campo.message}
+  </span>
+)}
+```
+
+#### Estados e Feedback
+
+1. **Loading**
+```tsx
+<button 
+  type="submit" 
+  className="btn btn-primary"
+  disabled={isSubmitting}
+>
+  {isSubmitting ? (
+    <>
+      <span className="animate-spin">...</span>
+      Enviando...
+    </>
+  ) : (
+    'Enviar'
+  )}
+</button>
+```
+
+2. **Sucesso**
+```tsx
+{submitSuccess && (
+  <div className="alert alert-success">
+    Formulário enviado com sucesso!
+  </div>
+)}
+```
+
+3. **Erro**
+```tsx
+{submitError && (
+  <div className="alert alert-error">
+    {submitError}
+  </div>
+)}
+```
+
+#### Layout e Espaçamento
+
+1. **Container Principal**
+```css
+.form-container {
+  @apply w-full max-w-4xl p-6 md:p-8 rounded-lg 
+  bg-gray-900/50 border border-gray-800;
+}
+```
+
+2. **Grupos de Campos**
+```css
+.form-group {
+  @apply grid gap-6 md:grid-cols-2;
+}
+```
+
+3. **Espaçamento entre Seções**
+```css
+.form-section {
+  @apply space-y-6 pb-6 mb-6 border-b border-gray-800;
+}
+```
+
+#### Boas Práticas
+
+1. **Organização do Código**
+   - Um componente por arquivo
+   - Schemas em arquivos separados
+   - Hooks personalizados para lógica complexa
+   - Types/Interfaces em arquivos .d.ts
+
+2. **Acessibilidade**
+   - Labels descritivos
+   - Atributos ARIA quando necessário
+   - Ordem de tabulação lógica
+   - Mensagens de erro claras
+   - Feedback visual e sonoro
+
+3. **Performance**
+   - Lazy loading para componentes pesados
+   - Debounce em inputs de busca
+   - Otimização de re-renders
+   - Memoização quando necessário
+
+4. **Responsividade**
+   - Mobile-first
+   - Breakpoints consistentes
+   - Adaptação de inputs para touch
+   - Teclado virtual considerado
+
+5. **Segurança**
+   - Validação no cliente e servidor
+   - Sanitização de inputs
+   - Rate limiting
+   - CSRF tokens
+   - Proteção contra XSS
+
+#### Fluxo de Desenvolvimento
+
+1. **Planejamento**
+   - Definir campos necessários
+   - Criar schema de validação
+   - Planejar layout e responsividade
+   - Identificar componentes necessários
+
+2. **Implementação**
+   - Criar componente base
+   - Implementar validação
+   - Adicionar estados e feedback
+   - Estilizar conforme design system
+
+3. **Testes**
+   - Validar todos os campos
+   - Testar responsividade
+   - Verificar acessibilidade
+   - Testar casos de erro
+
+4. **Revisão**
+   - Code review
+   - Teste de usabilidade
+   - Verificação de performance
+   - Validação de segurança
+
+#### Exemplos de Uso
+
+1. **Formulário Simples**
+```tsx
+export default function FormularioSimples() {
+  const form = useForm({
+    resolver: zodResolver(FormSchema)
+  })
+
+  return (
+    <FormContainer>
+      <FormField
+        name="nome"
+        label="Nome"
+        error={form.formState.errors.nome}
+        required
+      >
+        <input
+          type="text"
+          className="form-input"
+          {...form.register('nome')}
+        />
+      </FormField>
+      
+      <FormActions>
+        <Button type="submit">Enviar</Button>
+      </FormActions>
+    </FormContainer>
+  )
+}
+```
+
+2. **Formulário Multi-step**
+```tsx
+export default function FormularioMultiStep() {
+  const [step, setStep] = useState(1)
+  
+  return (
+    <FormContainer>
+      <FormProgress step={step} totalSteps={3} />
+      
+      {step === 1 && <StepOne />}
+      {step === 2 && <StepTwo />}
+      {step === 3 && <StepThree />}
+      
+      <FormActions>
+        {step > 1 && (
+          <Button onClick={() => setStep(s => s - 1)}>
+            Anterior
+          </Button>
+        )}
+        <Button onClick={() => setStep(s => s + 1)}>
+          {step === 3 ? 'Finalizar' : 'Próximo'}
+        </Button>
+      </FormActions>
+    </FormContainer>
+  )
+}
+```
+
+#### Checklist de Implementação
+
+- [ ] Schema de validação criado
+- [ ] Componentes necessários importados
+- [ ] Estados definidos
+- [ ] Validação implementada
+- [ ] Feedback visual adicionado
+- [ ] Responsividade testada
+- [ ] Acessibilidade verificada
+- [ ] Segurança implementada
+- [ ] Documentação atualizada
+- [ ] Testes realizados
