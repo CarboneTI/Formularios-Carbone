@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/config'
+import Logo from '@/components/Logo'
 
 // Cliente Supabase
 const supabase = getSupabaseClient()
@@ -75,16 +76,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-[#0F1117] text-white">
       <header className="border-b border-gray-800 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-5">
-            <img 
-              src="https://carbonecompany.com.br/wp-content/uploads/2025/02/Logo-vetorizado.svg"
-              alt="Carbone Company"
-              className="h-10 w-10 min-w-[40px] min-h-[40px] object-contain"
-            />
-            <h1 className="text-2xl font-bold ml-1 select-none">
-              Dashboard <span className="text-primary">Admin</span>
-            </h1>
-          </div>
+          <Logo />
           
           <div className="flex items-center space-x-8">
             <div className="text-sm text-gray-400">
@@ -149,6 +141,13 @@ export default function DashboardLayout({
               target="_blank"
             >
               Formulário SAC →
+            </Link>
+            <Link 
+              href="/reagendamento" 
+              className="block py-2 px-4 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+              target="_blank"
+            >
+              Formulário de Reagendamento →
             </Link>
           </nav>
         </aside>
