@@ -333,18 +333,42 @@ Este projeto é proprietário e confidencial. Todos os direitos reservados à Ca
 
 ## Padrões de Desenvolvimento
 
-### Formulários
+### Estrutura Padrão de Formulários
 
-#### Estrutura Base
+#### 1. Estrutura de Arquivos
+```
+src/
+├── components/forms/
+│   ├── [NomeFormulario]/
+│   │   ├── index.tsx              # Componente principal do formulário
+│   │   ├── schema.ts              # Schema de validação Zod
+│   │   ├── types.ts               # Types e interfaces
+│   │   └── components/            # Componentes específicos do formulário
+│   │       ├── FormHeader.tsx     # Cabeçalho do formulário
+│   │       ├── FormFields.tsx     # Campos do formulário
+│   │       └── FormActions.tsx    # Botões e ações
+```
+
+#### 2. Estrutura do Componente Principal
 ```tsx
 'use client'
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FormSchema } from '@/lib/schemas/form-schema'
+import { FormSchema } from './schema'
+import { FormContainer } from '@/components/ui/form-container'
+import { FormHeader } from './components/FormHeader'
+import { FormFields } from './components/FormFields'
+import { FormActions } from './components/FormActions'
 
-export default function FormularioExemplo() {
+export default function NomeFormulario() {
+  // 1. Estados e Hooks
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // 2. Configuração do React Hook Form
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -352,285 +376,137 @@ export default function FormularioExemplo() {
     }
   })
 
-  return (
-    <div className="w-full max-w-4xl mx-auto p-6">
-      <header>
-        {/* Cabeçalho padrão */}
-      </header>
+  // 3. Handler de Submit
+  const onSubmit = async (data) => {
+    try {
+      setIsSubmitting(true)
+      setSubmitError('')
       
-      <main className="form-container">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Campos do formulário */}
-        </form>
-      </main>
-    </div>
+      // Lógica de submit aqui
+      
+      setSubmitSuccess(true)
+    } catch (error) {
+      setSubmitError(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // 4. Estrutura JSX
+  return (
+    <FormContainer>
+      {/* Cabeçalho com título e descrição */}
+      <FormHeader 
+        title="Título do Formulário"
+        description="Descrição ou instruções do formulário"
+      />
+
+      {/* Formulário */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Campos do formulário */}
+        <FormFields form={form} />
+
+        {/* Mensagens de feedback */}
+        {submitError && (
+          <div className="alert alert-error" role="alert">
+            {submitError}
+          </div>
+        )}
+        
+        {submitSuccess && (
+          <div className="alert alert-success" role="alert">
+            Formulário enviado com sucesso!
+          </div>
+        )}
+
+        {/* Botões de ação */}
+        <FormActions
+          isSubmitting={isSubmitting}
+          onCancel={() => {/* lógica de cancelamento */}}
+        />
+      </form>
+    </FormContainer>
   )
 }
 ```
 
-#### Componentes Padrão
+#### 3. Elementos Obrigatórios
 
-1. **FormField** - Campo base para inputs
-```tsx
-<FormField
-  name="campo"
-  label="Label do Campo"
-  error={form.formState.errors.campo}
-  required
->
-  <input
-    type="text"
-    className="form-input"
-    {...form.register('campo')}
-  />
-</FormField>
-```
+1. **Cabeçalho do Formulário**
+   - Título claro e descritivo
+   - Descrição ou instruções quando necessário
+   - Breadcrumb para navegação (quando aplicável)
 
-2. **DateTimePicker** - Seletor de data e hora
-```tsx
-<DateTimePicker
-  label="Data e Hora"
-  value={data}
-  onChange={setData}
-  required
-/>
-```
+2. **Campos do Formulário**
+   - Label descritivo
+   - Indicador de campo obrigatório (*)
+   - Mensagem de erro
+   - Texto de ajuda (quando necessário)
+   - Estado de loading/disabled
+   - Feedback visual de validação
 
-3. **Dropdown** - Menu suspenso personalizado
-```tsx
-<Dropdown
-  label="Selecione uma opção"
-  options={opcoes}
-  value={selecionado}
-  onChange={setSelecionado}
-  required
-/>
-```
+3. **Área de Ações**
+   - Botão principal de submit
+   - Botão secundário (cancelar/voltar)
+   - Indicador de loading durante submit
+   - Posicionamento consistente (direita para desktop, largura total para mobile)
 
-4. **FileUpload** - Upload de arquivos
-```tsx
-<FileUpload
-  label="Anexar arquivo"
-  accept=".pdf,.doc,.docx"
-  maxSize={5} // MB
-  onUpload={handleUpload}
-/>
-```
+4. **Feedback ao Usuário**
+   - Mensagens de erro
+   - Mensagens de sucesso
+   - Indicadores de progresso (para formulários multi-step)
+   - Estados de loading
 
-#### Validação
-
-1. **Schema Zod**
-```tsx
-import { z } from 'zod'
-
-export const FormSchema = z.object({
-  nome: z.string().min(3, 'Nome muito curto'),
-  email: z.string().email('Email inválido'),
-  telefone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Telefone inválido'),
-  data: z.string().min(1, 'Data obrigatória'),
-})
-```
-
-2. **Mensagens de Erro**
-```tsx
-{form.formState.errors.campo && (
-  <span className="text-sm text-red-500">
-    {form.formState.errors.campo.message}
-  </span>
-)}
-```
-
-#### Estados e Feedback
-
-1. **Loading**
-```tsx
-<button 
-  type="submit" 
-  className="btn btn-primary"
-  disabled={isSubmitting}
->
-  {isSubmitting ? (
-    <>
-      <span className="animate-spin">...</span>
-      Enviando...
-    </>
-  ) : (
-    'Enviar'
-  )}
-</button>
-```
-
-2. **Sucesso**
-```tsx
-{submitSuccess && (
-  <div className="alert alert-success">
-    Formulário enviado com sucesso!
-  </div>
-)}
-```
-
-3. **Erro**
-```tsx
-{submitError && (
-  <div className="alert alert-error">
-    {submitError}
-  </div>
-)}
-```
-
-#### Layout e Espaçamento
-
-1. **Container Principal**
+#### 4. Estilos Padrão
 ```css
 .form-container {
-  @apply w-full max-w-4xl p-6 md:p-8 rounded-lg 
-  bg-gray-900/50 border border-gray-800;
+  @apply w-full max-w-4xl mx-auto p-6 space-y-8
+         bg-gray-900/50 border border-gray-800 rounded-lg;
+}
+
+.form-header {
+  @apply space-y-2 mb-8;
+}
+
+.form-title {
+  @apply text-2xl font-semibold text-white;
+}
+
+.form-description {
+  @apply text-gray-400;
+}
+
+.form-field {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-white;
+}
+
+.form-input {
+  @apply w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg
+         focus:ring-2 focus:ring-primary focus:border-transparent;
+}
+
+.form-error {
+  @apply text-sm text-red-500;
+}
+
+.form-actions {
+  @apply flex flex-col sm:flex-row justify-end gap-4 mt-8;
 }
 ```
 
-2. **Grupos de Campos**
-```css
-.form-group {
-  @apply grid gap-6 md:grid-cols-2;
-}
-```
+#### 5. Checklist de Implementação
 
-3. **Espaçamento entre Seções**
-```css
-.form-section {
-  @apply space-y-6 pb-6 mb-6 border-b border-gray-800;
-}
-```
-
-#### Boas Práticas
-
-1. **Organização do Código**
-   - Um componente por arquivo
-   - Schemas em arquivos separados
-   - Hooks personalizados para lógica complexa
-   - Types/Interfaces em arquivos .d.ts
-
-2. **Acessibilidade**
-   - Labels descritivos
-   - Atributos ARIA quando necessário
-   - Ordem de tabulação lógica
-   - Mensagens de erro claras
-   - Feedback visual e sonoro
-
-3. **Performance**
-   - Lazy loading para componentes pesados
-   - Debounce em inputs de busca
-   - Otimização de re-renders
-   - Memoização quando necessário
-
-4. **Responsividade**
-   - Mobile-first
-   - Breakpoints consistentes
-   - Adaptação de inputs para touch
-   - Teclado virtual considerado
-
-5. **Segurança**
-   - Validação no cliente e servidor
-   - Sanitização de inputs
-   - Rate limiting
-   - CSRF tokens
-   - Proteção contra XSS
-
-#### Fluxo de Desenvolvimento
-
-1. **Planejamento**
-   - Definir campos necessários
-   - Criar schema de validação
-   - Planejar layout e responsividade
-   - Identificar componentes necessários
-
-2. **Implementação**
-   - Criar componente base
-   - Implementar validação
-   - Adicionar estados e feedback
-   - Estilizar conforme design system
-
-3. **Testes**
-   - Validar todos os campos
-   - Testar responsividade
-   - Verificar acessibilidade
-   - Testar casos de erro
-
-4. **Revisão**
-   - Code review
-   - Teste de usabilidade
-   - Verificação de performance
-   - Validação de segurança
-
-#### Exemplos de Uso
-
-1. **Formulário Simples**
-```tsx
-export default function FormularioSimples() {
-  const form = useForm({
-    resolver: zodResolver(FormSchema)
-  })
-
-  return (
-    <FormContainer>
-      <FormField
-        name="nome"
-        label="Nome"
-        error={form.formState.errors.nome}
-        required
-      >
-        <input
-          type="text"
-          className="form-input"
-          {...form.register('nome')}
-        />
-      </FormField>
-      
-      <FormActions>
-        <Button type="submit">Enviar</Button>
-      </FormActions>
-    </FormContainer>
-  )
-}
-```
-
-2. **Formulário Multi-step**
-```tsx
-export default function FormularioMultiStep() {
-  const [step, setStep] = useState(1)
-  
-  return (
-    <FormContainer>
-      <FormProgress step={step} totalSteps={3} />
-      
-      {step === 1 && <StepOne />}
-      {step === 2 && <StepTwo />}
-      {step === 3 && <StepThree />}
-      
-      <FormActions>
-        {step > 1 && (
-          <Button onClick={() => setStep(s => s - 1)}>
-            Anterior
-          </Button>
-        )}
-        <Button onClick={() => setStep(s => s + 1)}>
-          {step === 3 ? 'Finalizar' : 'Próximo'}
-        </Button>
-      </FormActions>
-    </FormContainer>
-  )
-}
-```
-
-#### Checklist de Implementação
-
-- [ ] Schema de validação criado
-- [ ] Componentes necessários importados
-- [ ] Estados definidos
-- [ ] Validação implementada
-- [ ] Feedback visual adicionado
-- [ ] Responsividade testada
+- [ ] Estrutura de arquivos correta
+- [ ] Componente principal com estados necessários
+- [ ] Schema de validação implementado
+- [ ] Campos com labels e mensagens de erro
+- [ ] Feedback visual de estados
+- [ ] Botões de ação com estados corretos
+- [ ] Estilos conforme design system
+- [ ] Responsividade implementada
 - [ ] Acessibilidade verificada
-- [ ] Segurança implementada
-- [ ] Documentação atualizada
-- [ ] Testes realizados
+- [ ] Testes de validação realizados
